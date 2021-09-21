@@ -12,9 +12,9 @@ import random
 
 app = Ursina()
 
-NB_CELLS_X = 16
-NB_CELLS_Y = 9
-DENSITY = 5
+NB_CELLS_X = 80
+NB_CELLS_Y = 45
+DENSITY = 10
 
 file_types = '.png'
 textureless = False
@@ -83,6 +83,20 @@ class Voxel(Button):
                 destroyable = True,
             )
 
+    def openCell(self):
+        calculTexture(self)
+        self.destroyed = True
+        if self.bombsNearby == 0:
+            for voxel_row in board.voxels:
+                for voxel in voxel_row:
+                    if voxel.position[0] >= self.position[0] - 1 and voxel.position[0] <= self.position[0] + 1:
+                        if voxel.position[1] >= self.position[1] - 1 and voxel.position[1] <= self.position[1] + 1:
+                            if voxel.destroyed == False:
+                                voxel.openCell()
+        if checkWin() == True:
+            print("GAGNE")
+            exit(0)
+
     def input(self, key):
         if self.hovered and self.destroyable:
             if key == "left mouse down" and self.flaged == False:
@@ -96,11 +110,7 @@ class Voxel(Button):
                     #     exit(1)
                 else:
                     # destroy(self)
-                    calculTexture(self)
-                    self.destroyed = True
-                    if checkWin() == True:
-                        print("GAGNE")
-                        exit(0)
+                    self.openCell()
             if key == "right mouse down":
                 if self.flaged:
                     self.flaged = False
