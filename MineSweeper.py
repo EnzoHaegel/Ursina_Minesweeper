@@ -12,31 +12,34 @@ import random
 
 app = Ursina()
 
-NB_CELLS_X = 80
-NB_CELLS_Y = 45
-DENSITY = 10
+NB_CELLS_X = 16*3
+NB_CELLS_Y = 9*3
+DENSITY = 16
+OPEN_DELAY = 2
+
+SKIN = ""
 
 file_types = '.png'
 textureless = False
 
-load_texture("Assets/base", path=None)
-load_texture("Assets/flag", path=None)
-load_texture("Assets/0", path=None)
-load_texture("Assets/1", path=None)
-load_texture("Assets/2", path=None)
-load_texture("Assets/3", path=None)
-load_texture("Assets/4", path=None)
-load_texture("Assets/5", path=None)
-load_texture("Assets/6", path=None)
-load_texture("Assets/7", path=None)
-load_texture("Assets/8", path=None)
-load_texture("Assets/9", path=None)
+load_texture("Assets/{SKIN}base", path=None)
+load_texture("Assets/{SKIN}flag", path=None)
+load_texture("Assets/{SKIN}0", path=None)
+load_texture("Assets/{SKIN}1", path=None)
+load_texture("Assets/{SKIN}2", path=None)
+load_texture("Assets/{SKIN}3", path=None)
+load_texture("Assets/{SKIN}4", path=None)
+load_texture("Assets/{SKIN}5", path=None)
+load_texture("Assets/{SKIN}6", path=None)
+load_texture("Assets/{SKIN}7", path=None)
+load_texture("Assets/{SKIN}8", path=None)
+load_texture("Assets/{SKIN}9", path=None)
 
 window.borderless = False
 
 camera.orthographic = True
-camera.fov = 16
-camera.position = (NB_CELLS_X / 2 - 1, NB_CELLS_Y / 2 - 1)
+camera.fov = (NB_CELLS_X+3)//2
+camera.position = (NB_CELLS_X / 2 - 0.5, NB_CELLS_Y / 2 - 1)
 
 class Core():
     def __init__(self):
@@ -66,6 +69,7 @@ class Voxel(Button):
                 bombsNearby = 0,
                 destroyed = False,
                 destroyable = False,
+                a = Audio('Assets/pop.wav', pitch=1, loop=False, autoplay=False, volume=1),
             )
         else:
             super().__init__(
@@ -73,14 +77,16 @@ class Voxel(Button):
                 position = position,
                 model = 'cube',
                 origin_y = .5,
-                texture = 'base',
-                color = color.color(0, 0, random.uniform(.9, 1.0)),
+                texture = SKIN + "base",
+                color = color.white, #color.color(0, 0, random.uniform(.9, 1.0)),
                 highlight_color = color.lime,
                 bomb = False,
                 flaged = False,
                 bombsNearby = 0,
                 destroyed = False,
                 destroyable = True,
+                openMe = -1,
+                a = Audio('Assets/pop.wav', pitch=1, loop=False, autoplay=False, volume=1),
             )
 
     def openCell(self):
@@ -91,8 +97,8 @@ class Voxel(Button):
                 for voxel in voxel_row:
                     if voxel.position[0] >= self.position[0] - 1 and voxel.position[0] <= self.position[0] + 1:
                         if voxel.position[1] >= self.position[1] - 1 and voxel.position[1] <= self.position[1] + 1:
-                            if voxel.destroyed == False:
-                                voxel.openCell()
+                            if voxel.destroyed == False and voxel.openMe == -1:
+                                voxel.openMe = OPEN_DELAY
         if checkWin() == True:
             print("GAGNE")
             exit(0)
@@ -110,7 +116,7 @@ class Voxel(Button):
                     #     exit(1)
                 else:
                     # destroy(self)
-                    self.openCell()
+                    self.openMe = OPEN_DELAY
             if key == "right mouse down":
                 if self.flaged:
                     self.flaged = False
@@ -127,7 +133,9 @@ def calculTexture(voxel: Voxel):
     # if voxel.bombsNearby == 0:
     #     destroy(voxel)
     # else:
-    voxel.texture = str(voxel.bombsNearby)
+    voxel.a.play()
+    voxel.a.fade_out(value=0, duration=.5, delay=0, resolution=None, interrupt='finish')
+    voxel.texture = SKIN + str(voxel.bombsNearby)
 
 def debug():
     if core.debug == False:
@@ -144,7 +152,16 @@ def debug():
             for voxel in voxel_row:
                 if voxel.bomb:
                     voxel.color = color.color(0, 0, random.uniform(.9, 1.0))
-    
+
+def update():
+    for voxel_row in board.voxels:
+        for voxel in voxel_row:
+            if voxel.openMe == 0:
+                voxel.openMe = -1
+                voxel.openCell()
+            if voxel.openMe > 0:
+                voxel.openMe -= 1
+
 def checkWin():
     for voxel_row in board.voxels:
         for voxel in voxel_row:
@@ -162,12 +179,12 @@ def addMines(position=(0, 0), density = 3):
                 voxel.bomb = True
                 addBombCounter(voxel.position, 1)
                 # voxel.color = color.rgb(255, 0, 0)
-    addText()
+#    addText()
 
-def addText():
-    for voxel_row in board.voxels:
-        for voxel in voxel_row:
-            Voxel(position=(voxel.position[0], voxel.position[1], 1), voxelType="Number", amount=voxel.bombsNearby)
+#def addText():
+#    for voxel_row in board.voxels:
+#        for voxel in voxel_row:
+#            Voxel(position=(voxel.position[0], voxel.position[1], 1), voxelType="Number", amount=voxel.bombsNearby)
 
 def addBombCounter(position, amount):
     for voxel_row in board.voxels:
