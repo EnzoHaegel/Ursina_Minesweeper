@@ -8,6 +8,8 @@
 ##
 
 from ursina import *
+import os.path
+from os import path
 import random
 
 app = Ursina()
@@ -193,6 +195,9 @@ def addBombCounter(position, amount):
                 if voxel.position[1] >= position[1] - 1 and voxel.position[1] <= position[1] + 1:
                     voxel.bombsNearby += 1
 
+if len(sys.argv) > 1 and path.exists("Assets/"+sys.argv[1]+"_1.png"):
+    SKIN = sys.argv[1]+"_"
+    print("Skin: "+SKIN)
 core = Core()
 EditorCamera()
 board = Map(size=(NB_CELLS_X, NB_CELLS_Y), density=0.3)
