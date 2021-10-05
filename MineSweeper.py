@@ -225,6 +225,7 @@ def addMines(position=(0, 0), density = 3):
         for voxel in voxel_row:
             if voxel.position[0] >= position[0] - 1 and voxel.position[0] <= position[0] + 1:
                 if voxel.position[1] >= position[1] - 1 and voxel.position[1] <= position[1] + 1:
+                    random.randint(0, density - 1)
                     continue
             if random.randint(0, density - 1) == 0:
                 voxel.bomb = True
