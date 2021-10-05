@@ -12,6 +12,10 @@ import os.path
 from os import path
 import random
 
+SEED = 42
+
+random.seed(SEED)
+
 app = Ursina()
 
 NB_CELLS_X = 16*2
