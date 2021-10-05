@@ -123,6 +123,23 @@ class Voxel(Button):
                             if voxel.flaged == False and voxel.destroyed == False and voxel.openMe == -1:
                                 voxel.openMe = OPEN_DELAY
 
+    def flagCellNext(self):
+        count = 0
+        for voxel_row in board.voxels:
+            for voxel in voxel_row:
+                if voxel.position[0] >= self.position[0] - 1 and voxel.position[0] <= self.position[0] + 1:
+                    if voxel.position[1] >= self.position[1] - 1 and voxel.position[1] <= self.position[1] + 1:
+                        if not voxel.destroyed:
+                            count += 1
+        if self.bombsNearby == count:
+            for voxel_row in board.voxels:
+                for voxel in voxel_row:
+                    if voxel.position[0] >= self.position[0] - 1 and voxel.position[0] <= self.position[0] + 1:
+                        if voxel.position[1] >= self.position[1] - 1 and voxel.position[1] <= self.position[1] + 1:
+                            if not voxel.destroyed:
+                                voxel.flaged = True
+                                voxel.texture = "flag"
+
     def input(self, key):
         if self.hovered and self.destroyable:
             if key == "left mouse down" and self.flaged == False:
@@ -149,6 +166,8 @@ class Voxel(Button):
                 elif not self.flaged and not self.destroyed:
                     self.flaged = True
                     self.texture = "flag"
+                elif not self.flaged and self.destroyed:
+                    self.flagCellNext()
             if key == 'd':
                 debug()
 
